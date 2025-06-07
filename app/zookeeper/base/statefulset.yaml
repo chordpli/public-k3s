@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: zookeeper
+  labels:
+    app: zookeeper
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zookeeper
+  serviceName: zookeeper-headless
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: zookeeper
+          image: confluentinc/cp-zookeeper:7.6.1
+          ports:
+            - containerPort: 2181
+              name: client
+            - containerPort: 2888
+              name: server
+            - containerPort: 3888
+              name: leader-election
+          env:
+            - name: ZOOKEEPER_CLIENT_PORT
+              value: "2181"
+            - name: ZOOKEEPER_SERVER_ID
+              value: "1"
+            # 단일 노드 Zookeeper 설정입니다.
+            # 3노드 클러스터를 구성하려면 ZOOKEEPER_SERVERS 환경 변수 설정이 달라져야 합니다.
+            # (예: "server.1=zookeeper-0.zookeeper-headless...:2888:3888 server.2=... server.3=...")
+            - name: ZOOKEEPER_SERVERS
+              value: "server.1=zookeeper-0.zookeeper-headless.zookeeper-system.svc.cluster.local:2888:3888"
+            - name: ALLOW_ANONYMOUS_LOGIN
+              value: "no"
+            - name: ZOOKEEPER_AUTH_PROVIDER_1
+              value: "org.apache.zookeeper.server.auth.SASLAuthenticationProvider"
+            - name: ZOOKEEPER_REQUIRE_CLIENT_AUTH_SCHEME
+              value: "sasl"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "300m"
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/zookeeper/data
+            - name: dlog
+              mountPath: /var/lib/zookeeper/log
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 2Gi
+    - metadata:
+        name: dlog
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 1Gi
