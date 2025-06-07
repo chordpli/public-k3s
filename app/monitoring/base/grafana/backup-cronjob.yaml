@@ -1,0 +1,64 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: grafana-backup
+spec:
+  schedule: "0 2 * * *" # 매일 새벽 2시
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: backup
+              image: alpine:3.14
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  # 백업 디렉토리 사용량 확인 (85% 이상일 때 정리)
+                  USAGE=$(df /backup | awk 'NR==2 {print $5}' | sed 's/%//')
+                  if [ "$USAGE" -gt 85 ]; then
+                    echo "Storage usage is over 85%. Cleaning old backups..."
+                    # 가장 오래된 백업파일부터 삭제 (usage가 85% 미만이 될 때까지)
+                    while [ "$USAGE" -gt 85 ] && [ -n "$(ls -t /backup/grafana-*.tar.gz 2>/dev/null)" ]; do
+                      OLDEST=$(ls -t /backup/grafana-*.tar.gz | tail -n 1)
+                      if [ -n "$OLDEST" ]; then
+                        rm "$OLDEST"
+                        echo "Removed old backup: $OLDEST"
+                        USAGE=$(df /backup | awk 'NR==2 {print $5}' | sed 's/%//')
+                      else
+                        break
+                      fi
+                    done
+                  fi
+
+                  # 3일 이상 된 백업 파일 삭제
+                  find /backup -name "grafana-*.tar.gz" -mtime +3 -delete
+
+                  # 새로운 백업 생성 전 공간 확인
+                  FREE_SPACE=$(df -P /backup | awk 'NR==2 {print $4}')
+                  ESTIMATED_SIZE=$(du -s /var/lib/grafana | awk '{print $1}')
+
+                  if [ "$FREE_SPACE" -gt "$ESTIMATED_SIZE" ]; then
+                    # 새로운 백업 생성
+                    tar -czf /backup/grafana-$(date +%Y%m%d).tar.gz /var/lib/grafana
+                    echo "Backup created successfully"
+                  else
+                    echo "Not enough space for new backup"
+                    exit 1
+                  fi
+              volumeMounts:
+                - name: grafana-storage
+                  mountPath: /var/lib/grafana
+                  readOnly: true
+                - name: backup-storage
+                  mountPath: /backup
+          restartPolicy: OnFailure
+          volumes:
+            - name: grafana-storage
+              persistentVolumeClaim:
+                claimName: grafana-storage
+            - name: backup-storage
+              persistentVolumeClaim:
+                claimName: grafana-backup-storage

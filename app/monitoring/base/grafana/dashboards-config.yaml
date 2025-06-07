@@ -1,0 +1,205 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  labels:
+    grafana_dashboard: "1"
+data:
+  memorit-dashboard.json: |
+    {
+      "title": "k3senv-application Application Dashboard",
+      "uid": "k3senv-application-dashboard",
+      "panels": [
+        {
+          "title": "Application Metrics",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+          "panels": [
+            {
+              "title": "API Response Time",
+              "targets": [
+                {
+                  "expr": "rate(http_server_requests_seconds_sum{app=\"k3senv-application\"}[5m]) / rate(http_server_requests_seconds_count{app=\"k3senv-application\"}[5m])",
+                  "legendFormat": "{{method}} {{uri}}"
+                }
+              ]
+            },
+            {
+              "title": "Error Rate",
+              "targets": [
+                {
+                  "expr": "sum(rate(http_server_requests_seconds_count{app=\"k3senv-application\",status=~\"5..\"}[5m])) / sum(rate(http_server_requests_seconds_count{app=\"k3senv-application\"}[5m])) * 100",
+                  "legendFormat": "Error %"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Resource Usage",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+          "panels": [
+            {
+              "title": "Memory Usage",
+              "targets": [
+                {
+                  "expr": "container_memory_usage_bytes{container=\"k3senv-application\"}"
+                }
+              ]
+            },
+            {
+              "title": "CPU Usage",
+              "targets": [
+                {
+                  "expr": "rate(container_cpu_usage_seconds_total{container=\"k3senv-application\"}[5m])"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Redis Metrics",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+          "panels": [
+            {
+              "title": "Redis Memory Usage",
+              "targets": [
+                {
+                  "expr": "redis_memory_used_bytes{service=\"redis-master-svc\"}"
+                }
+              ]
+            },
+            {
+              "title": "Redis Connected Clients",
+              "targets": [
+                {
+                  "expr": "redis_connected_clients{service=\"redis-master-svc\"}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Kafka Metrics",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+          "panels": [
+            {
+              "title": "Message Rate",
+              "targets": [
+                {
+                  "expr": "kafka_topic_partition_current_offset{topic=~\"k3senv-application.*\"} - kafka_topic_partition_oldest_offset{topic=~\"k3senv-application.*\"}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Logs",
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 16},
+          "type": "logs",
+          "targets": [
+            {
+              "expr": "{app=\"k3senv-application\"}"
+            }
+          ]
+        }
+      ]
+    }
+  doppler-env-application-dashboard.json: |
+    {
+      "title": "Doppler Env Application Dashboard",
+      "uid": "doppler-env-application-dashboard",
+      "panels": [
+        {
+          "title": "Application Metrics",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+          "panels": [
+            {
+              "title": "API Response Time",
+              "targets": [
+                {
+                  "expr": "rate(http_server_requests_seconds_sum{app=\"doppler-env-application\"}[5m]) / rate(http_server_requests_seconds_count{app=\"doppler-env-application\"}[5m])",
+                  "legendFormat": "{{method}} {{uri}}"
+                }
+              ]
+            },
+            {
+              "title": "Error Rate",
+              "targets": [
+                {
+                  "expr": "sum(rate(http_server_requests_seconds_count{app=\"doppler-env-application\",status=~\"5..\"}[5m])) / sum(rate(http_server_requests_seconds_count{app=\"doppler-env-application\"}[5m])) * 100",
+                  "legendFormat": "Error %"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Resource Usage",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+          "panels": [
+            {
+              "title": "Memory Usage",
+              "targets": [
+                {
+                  "expr": "container_memory_usage_bytes{container=\"doppler-env-application\"}"
+                }
+              ]
+            },
+            {
+              "title": "CPU Usage",
+              "targets": [
+                {
+                  "expr": "rate(container_cpu_usage_seconds_total{container=\"doppler-env-application\"}[5m])"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Redis Metrics",
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+          "panels": [
+            {
+              "title": "Redis Memory Usage",
+              "targets": [
+                {
+                  "expr": "redis_memory_used_bytes{service=\"redis-master-svc\"}"
+                }
+              ]
+            },
+            {
+              "title": "Redis Connected Clients",
+              "targets": [
+                {
+                  "expr": "redis_connected_clients{service=\"redis-master-svc\"}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Kafka Metrics",
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+          "panels": [
+            {
+              "title": "Message Rate",
+              "targets": [
+                {
+                  "expr": "kafka_topic_partition_current_offset{topic=~\"doppler-env-application.*\"} - kafka_topic_partition_oldest_offset{topic=~\"doppler-env-application.*\"}"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Logs",
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 16},
+          "type": "logs",
+          "targets": [
+            {
+              "expr": "{app=\"doppler-env-application\"}"
+            }
+          ]
+        }
+      ]
+    }
