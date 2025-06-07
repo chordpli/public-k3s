@@ -5,7 +5,7 @@ metadata:
   labels:
     grafana_dashboard: "1"
 data:
-  memorit-dashboard.json: |
+  k3senv-application-dashboard.json: |
     {
       "title": "k3senv-application Application Dashboard",
       "uid": "k3senv-application-dashboard",
