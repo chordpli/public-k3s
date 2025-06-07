@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: doppler-env-application-svc
+  labels:
+    app: doppler-env-application
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80 # 서비스가 클러스터 내부에서 노출할 포트
+      targetPort: 8080 # doppler-env-application 파드의 containerPort
+      protocol: TCP
+      name: http
+  selector:
+    app: doppler-env-application

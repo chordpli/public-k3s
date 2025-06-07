@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: doppler-env-application
+
+resources:
+  - ../../base
+  - namespace.yaml
+  - ingressroute.yaml
+  - doppler-env-application-https-redirect-middleware.yaml
+  - doppler-secret-cr.yaml
