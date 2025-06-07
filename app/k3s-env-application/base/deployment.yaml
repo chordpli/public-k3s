@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k3senv-application
+  labels:
+    app: k3senv-application
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: k3senv-application
+  template:
+    metadata:
+      labels:
+        app: k3senv-application
+    spec:
+      containers:
+        - name: k3senv-application
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /api/v1/system/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /api/v1/system/health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "150m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          env:
+            - name: DEBUG
+              value: "true"
+            # === 데이터베이스 관련 환경 변수 ===
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: k3senv-application-db-credentials
+                  key: SPRING_DATASOURCE_URL
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: k3senv-application-db-credentials
+                  key: DB_USER
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: k3senv-application-db-credentials
+                  key: DB_PASSWORD
+
+            # === Redis 관련 환경 변수 (application.yml에 맞게 추가) ===
+            - name: REDIS_HOST
+              value: "redis-master-svc.redis-system.svc.cluster.local" # Redis Master 서비스의 전체 주소 (네임스페이스 포함)
+            - name: REDIS_PORT
+              value: "6379"
+
+            # === Kafka 관련 환경 변수 ===
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka-headless.kafka-system.svc.cluster.local:9092"
