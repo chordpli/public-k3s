@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-master-svc
+  labels:
+    app: redis
+    role: master
+spec:
+  type: NodePort
+  ports:
+    - name: client
+      port: 6379
+      targetPort: client
+      nodePort: 30379
+  selector:
+    app: redis
+    role: master
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-master-headless
+  labels:
+    app: redis
+    role: master
+spec:
+  clusterIP: None
+  ports:
+    - name: client
+      port: 6379
+      targetPort: client
+  selector:
+    app: redis
+    role: master
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-replica-svc
+  labels:
+    app: redis
+    role: replica
+spec:
+  type: ClusterIP
+  ports:
+    - name: client
+      port: 6379
+      targetPort: client
+  selector:
+    app: redis
+    role: replica
