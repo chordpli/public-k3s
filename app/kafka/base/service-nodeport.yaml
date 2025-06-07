@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-0-external
+  labels:
+    app: kafka
+spec:
+  type: NodePort
+  ports:
+  - name: outside
+    port: 9093
+    targetPort: outside
+    nodePort: 30090
+  selector:
+    app: kafka
+    statefulset.kubernetes.io/pod-name: kafka-0
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-1-external
+  labels:
+    app: kafka
+spec:
+  type: NodePort
+  ports:
+  - name: outside
+    port: 9093
+    targetPort: outside
+    nodePort: 30091
+  selector:
+    app: kafka
+    statefulset.kubernetes.io/pod-name: kafka-1
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kafka-2-external
+  labels:
+    app: kafka
+spec:
+  type: NodePort
+  ports:
+  - name: outside
+    port: 9093
+    targetPort: outside
+    nodePort: 30092
+  selector:
+    app: kafka
+    statefulset.kubernetes.io/pod-name: kafka-2
