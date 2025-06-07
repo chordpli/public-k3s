@@ -1,0 +1,36 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: doppler-env-application-http-ingressroute
+  namespace: doppler-env-application
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`doppler-env-application.example.com`) && PathPrefix(`/`)
+      kind: Rule
+      middlewares:
+        - name: doppler-env-application-redirect-https
+      services:
+        - name: doppler-env-application-svc
+          port: 80
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: doppler-env-application-https-ingressroute
+  namespace: doppler-env-application
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`doppler-env-application.example.com`) && PathPrefix(`/`)
+      kind: Rule
+      services:
+        - name: doppler-env-application-svc
+          port: 80
+  tls:
+    secretName: doppler-env-application-example-com-tls
+    certResolver: letsencrypt
+    domains:
+      - main: "doppler-env-application.example.com"

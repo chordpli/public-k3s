@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: doppler-env-application
+  labels:
+    app:
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: doppler-env-application
+  template:
+    metadata:
+      labels:
+        app: doppler-env-application
+      annotations: # Doppler 어노테이션 추가
+        doppler.com/secret: doppler-env-application/prd # 실제 Doppler 프로젝트 및 설정 이름으로 변경해야 합니다.
+    spec:
+      imagePullSecrets: # GHCR 프라이빗 이미지 접근용
+        - name: ghcr-only-project-secret
+      containers:
+        - name: doppler-env-application
+          image: ghcr.io/project/doppler-env-application-server:latest # 실제 이미지 경로로 수정!
+          ports:
+            - containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /api/v1/system/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /api/v1/system/health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "150m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          envFrom:
+            - secretRef:
+                name: doppler-env-application-env-from-doppler
+          env:
+            - name: DEBUG
+              value: "true"
+            # === Redis 관련 환경 변수 (application.yml에 맞게 추가) ===
+            - name: REDIS_HOST
+              value: "redis-master-svc.redis-system.svc.cluster.local" # Redis Master 서비스의 전체 주소 (네임스페이스 포함)
+            - name: REDIS_PORT
+              value: "6379"
