@@ -1,0 +1,9 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: k3senv-application-redirect-https
+  namespace: k3senv-application
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true

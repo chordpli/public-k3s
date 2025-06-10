@@ -1,0 +1,32 @@
+# ls /var/lib/rancher/k3s/server/manifests/
+# sudo nano /var/lib/rancher/k3s/server/manifests/traefik-config.yaml
+# "--certificatesresolvers.letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory" 해당 설정은 테스트 하기 위해 인증서를 계속 발급 받는 명렁어. 실제로는 주석처리해야하며, 보안 위험성이 있음
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    additionalArguments:
+      - "--log.level=DEBUG"
+      - "--certificatesresolvers.letsencrypt.acme.email=amfunm@naver.com"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/data/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencrypt.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+
+
+    ports:
+      web:
+        port: 8000 
+        expose: true
+        exposedPort: 80
+
+      websecure:
+        port: 8443
+        expose: true
+        exposedPort: 443
+        tls:
+          enabled: true
+          certResolver: letsencrypt

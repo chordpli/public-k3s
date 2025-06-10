@@ -1,0 +1,36 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: k3senv-application-http-ingressroute
+  namespace: k3senv-application
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`k3senv.domain.com`) && PathPrefix(`/`)
+      kind: Rule
+      middlewares:
+        - name: k3senv-application-redirect-https
+      services:
+        - name: k3senv-application-svc
+          port: 80
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: k3senv-application-https-ingressroute
+  namespace: k3senv-application
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`k3senv.domain.com`) && PathPrefix(`/`)
+      kind: Rule
+      services:
+        - name: k3senv-application-svc
+          port: 80
+  tls:
+    secretName: k3senv-application-domain-com-tls
+    certResolver: letsencrypt
+    domains:
+      - main: "k3senv.domain.com"
