@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: k3senv-application
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/chordpli/public-k3s.git'
+    path: apps/k3senv-application/overlays/production
+    targetRevision: HEAD
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: k3senv-application
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

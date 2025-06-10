@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: doppler-env-application
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/chordpli/public-k3s.git'
+    path: apps/doppler-env-application/overlays/production
+    targetRevision: HEAD
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: doppler-env-application
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

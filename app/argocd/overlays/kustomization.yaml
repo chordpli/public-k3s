@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - argocd-app-k3senv-application.yaml
+  - argocd-app-doppler-env-application.yaml
+  - argocd-kafka.yaml
+  - argocd-zookeeper.yaml
+  - argocd-redis.yaml
+  - argocd-monitoring.yaml

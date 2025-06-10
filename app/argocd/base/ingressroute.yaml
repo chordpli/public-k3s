@@ -1,0 +1,39 @@
+# ingressroute.yaml (또는 http-ingressroute.yaml 등으로 분리)
+
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: argocd-server-http-ingressroute # HTTP용 IngressRoute
+  namespace: argocd
+spec:
+  entryPoints:
+    - web # HTTP 엔트리포인트
+  routes:
+    - match: Host(`argocd.domain.com`)
+      kind: Rule
+      middlewares:
+        - name: argocd-redirect-https # 위에서 정의한 HTTPS 리디렉션 미들웨어
+          namespace: argocd
+      services:
+        - name: argocd-server # Argo CD 서버 서비스
+          port: 80 # 또는 argocd-server가 실제로 리슨하는 HTTP 포트 (예: 8080)
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: argocd-server-ingressroute # 기존 HTTPS용 IngressRoute (이름은 그대로 유지하거나 argocd-server-https-ingressroute 등으로 변경 가능)
+  namespace: argocd
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`argocd.domain.com`)
+      kind: Rule
+      services:
+        - name: argocd-server
+          port: 80 # 또는 argocd-server가 실제로 리슨하는 HTTP 포트 (예: 8080)
+  tls:
+    secretName: argocd-domain-com-tls # Let's Encrypt가 생성/사용할 시크릿 이름
+    certResolver: letsencrypt # Traefik에 설정된 Let's Encrypt 리졸버
+    domains:
+      - main: "argocd.domain.com"
